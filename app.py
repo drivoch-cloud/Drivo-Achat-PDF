@@ -26,7 +26,13 @@ def pdf():
         if y < 50:
             c.showPage()
             y = h - 50
-        c.drawString(x, y, line[:120])
+        c.setFont("Helvetica", 10)
+
+if line.strip() == "":
+    y -= 10
+else:
+    c.drawString(x, y, line)
+    y -= 14
         y -= 14
 
     c.save()
