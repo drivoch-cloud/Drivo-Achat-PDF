@@ -33,9 +33,7 @@ if line.strip() == "":
 else:
     c.drawString(x, y, line)
     y -= 14
-        y -= 14
-
-    c.save()
+c.save()
     buf.seek(0)
 
     with open(path, "wb") as f:
