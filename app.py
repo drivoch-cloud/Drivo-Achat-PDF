@@ -1,15 +1,21 @@
-from flask import Flask, request, send_file
+from flask import Flask, request, jsonify
 from io import BytesIO
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
+import uuid
+import os
 
 app = Flask(__name__)
+os.makedirs("files", exist_ok=True)
 
 @app.post("/pdf")
 def pdf():
     data = request.get_json(force=True)
     filename = data.get("filename", "contrat.pdf")
     text = data["text"]
+
+    file_id = str(uuid.uuid4())
+    path = f"files/{file_id}.pdf"
 
     buf = BytesIO()
     c = canvas.Canvas(buf, pagesize=A4)
@@ -26,13 +32,14 @@ def pdf():
     c.save()
     buf.seek(0)
 
-    return send_file(
-        buf,
-        mimetype="application/pdf",
-        as_attachment=True,
-        download_name=filename
-    )
+    with open(path, "wb") as f:
+        f.write(buf.read())
 
-@app.get("/health")
-def health():
-    return {"ok": True}
+    return jsonify({
+        "url": f"https://drivo-achat-pdf.onrender.com/download/{file_id}",
+        "filename": filename
+    })
+
+@app.get("/download/<file_id>")
+def download(file_id):
+    return app.send_static_file(f"../files/{file_id}.pdf")
